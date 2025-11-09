@@ -194,7 +194,7 @@ def update_memory_with_gpt(user_input: str) -> str:
 
 # --- MAIN LOOP ---
 def main():
-    print("💬 Disaster Recovery Companion")
+    print("💬 Natural Disastor Companion")
     print("Type 'quit' to exit.\n")
 
     while True:
@@ -215,3 +215,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
