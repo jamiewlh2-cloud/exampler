@@ -23,11 +23,14 @@ ensure_dependencies()
 from openai import OpenAI
 from dateutil import parser as date_parser
 
-# --- HARDCODED API KEY ---
-os.environ["OPENAI_API_KEY"] = "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"
-client = OpenAI(api_key="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")
+# --- API CLIENT SETUP (PROMPT FOR API KEY) ---
+api_key = input("Please enter your OpenAI API key: ").strip()
+if not api_key:
+    raise ValueError("⚠️ You must provide a valid API key to continue.")
 
-# Crisis message
+client = OpenAI(api_key=api_key)
+
+# --- CRISIS MESSAGE ---
 CRISIS_RESPONSE = (
     "I'm really sorry that you're feeling like this. You're not alone, and help is available right now.\n"
     "If you’re in Canada or the U.S., you can call or text **988** to reach the Suicide and Crisis Lifeline.\n"
