@@ -40,7 +40,7 @@ aid-dispatch-project
 
 3. Run the application:
    ```
-   python src/main.py
+   python main.py
    ```
 
 ## Usage
@@ -53,6 +53,6 @@ aid-dispatch-project
 - Government input: Add supplies to the storage.
 - Non-government request: Request aid and receive truck dispatch or distance to the nearest help station.
 
-## Contributing
+## Password
 
-Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.
+- The government page is password protected, to enter, the password is gov.
