@@ -1,0 +1,43 @@
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "Central Help Station",
+      "location": {
+        "latitude": 40.7128,
+        "longitude": -74.0060
+      },
+      "supplies": {
+        "food": 1000,
+        "water": 500,
+        "medical": 200
+      }
+    },
+    {
+      "id": 2,
+      "name": "Northside Help Station",
+      "location": {
+        "latitude": 40.7306,
+        "longitude": -73.9352
+      },
+      "supplies": {
+        "food": 800,
+        "water": 300,
+        "medical": 150
+      }
+    },
+    {
+      "id": 3,
+      "name": "Eastside Help Station",
+      "location": {
+        "latitude": 40.7498,
+        "longitude": -73.9874
+      },
+      "supplies": {
+        "food": 600,
+        "water": 400,
+        "medical": 100
+      }
+    }
+  ]
+}

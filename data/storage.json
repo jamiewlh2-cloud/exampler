@@ -1,0 +1,32 @@
+{
+  "supplies": {
+    "Blankets": 7,
+    "food": 1766
+  },
+  "reports": [
+    {
+      "name": "Brandon",
+      "disaster_type": "flood",
+      "details": "Lots of water",
+      "timestamp": "2025-11-09T16:59:16.695855Z"
+    },
+    {
+      "name": "Jamie",
+      "disaster_type": "tsunami",
+      "details": "there is a tsunami coming to georgetown ontario",
+      "timestamp": "2025-11-09T17:12:10.883954Z"
+    },
+    {
+      "name": "jack",
+      "disaster_type": "earthquake",
+      "details": "ground started shaking screaming everywhere",
+      "timestamp": "2025-11-09T17:14:35.612076Z"
+    }
+  ],
+  "requesters": [
+    "jack'",
+    "Brandon",
+    "Jamie",
+    "jack"
+  ]
+}
