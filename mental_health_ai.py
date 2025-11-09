@@ -1,15 +1,13 @@
 import json
-import os
 import re
 from datetime import datetime, timezone
 from dateutil import parser as date_parser  # pip install python-dateutil
 from openai import OpenAI
+import os
 
-# Hardcoded OpenAI API key (replace with your actual key)
-api_key = "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"
-
-# Initialize OpenAI client
-client = OpenAI(api_key=api_key)
+# --- HARDCODED API KEY ---
+os.environ["OPENAI_API_KEY"] = "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"  # <-- Replace with your full key
+client = OpenAI()  # Initialize OpenAI client
 
 # Crisis message
 CRISIS_RESPONSE = (
@@ -29,19 +27,18 @@ memory = {
     "friends": {},
     "pets": {},
     "significant_others": {},
-    "losses": [],  # {"person": str, "cause": str, "timestamp": str}
+    "losses": [],
     "major_events": [],
     "recent_emotions": [],
     "coping_strategies": [],
     "conversation_history": [],
     "preferences": {"tone": None, "topics_to_avoid": [], "favorites": []},
     "crisis_info": {},
-    "disasters": []  # {"type": str, "timestamp": str, "advice": str}
+    "disasters": []
 }
 
 # --- HELPERS ---
 def extract_time_from_text(text: str):
-    """Parse datetime from user text; return ISO string if found."""
     try:
         dt = date_parser.parse(text, fuzzy=True)
         return dt.isoformat()
@@ -49,7 +46,6 @@ def extract_time_from_text(text: str):
         return None
 
 def update_disasters(user_input: str):
-    """Detect natural disasters and add them to memory with timestamp and advice."""
     disasters_keywords = {
         "earthquake": "Drop, cover, and hold on. Stay away from windows and heavy objects.",
         "fire": "Stay low to avoid smoke, exit immediately if safe, and call emergency services.",
@@ -69,8 +65,6 @@ def update_disasters(user_input: str):
             })
 
 def update_losses_with_time(user_input: str):
-    """Detect mentions of loved ones dying; store with timestamp, name, and cause."""
-    # Matches explicit statements that a person died
     loss_pattern = r"(my|our)\s+(dad|mom|father|mother|brother|sister|friend|pet)\s*(\w*)\s*(died|passed|lost|killed|gone)"
     cause_pattern = r"(?:due to|in a|from a|because of|in a)\s+([\w\s]+)"
 
@@ -81,11 +75,8 @@ def update_losses_with_time(user_input: str):
     for match in matches:
         person_type = match[1]
         person_name = match[2].capitalize() if match[2] else person_type.capitalize()
-
-        # Extract time from text
         timestamp = extract_time_from_text(user_input) or datetime.now(timezone.utc).isoformat()
 
-        # Avoid duplicates for same person + timestamp
         exists = any(l.get("person") == person_name and l.get("timestamp") == timestamp for l in memory["losses"])
         if not exists:
             memory["losses"].append({
@@ -95,17 +86,13 @@ def update_losses_with_time(user_input: str):
             })
 
 def check_for_time_question(user_input: str):
-    """If the user asks about when something happened, retrieve the timestamp from memory."""
     text = user_input.lower()
     if "what time" in text or "when" in text:
-        # Extract a person name or type if mentioned
         person_match = re.search(r"(my|our)?\s*(mom|dad|father|mother|brother|sister|friend|pet|\w+)", text)
         person_query = person_match.group(2).capitalize() if person_match else None
 
-        # Check losses
         if memory["losses"]:
             if person_query:
-                # Try to find that person
                 for loss in reversed(memory["losses"]):
                     if loss["person"].lower() == person_query.lower():
                         person = loss["person"]
@@ -119,7 +106,6 @@ def check_for_time_question(user_input: str):
                         return f"Your loved one {person} died at {timestamp_str} due to {cause}."
                 return f"I don’t have a recorded time for {person_query}."
             else:
-                # No specific person, return the most recent
                 latest_loss = memory["losses"][-1]
                 person = latest_loss.get("person", "they")
                 timestamp = latest_loss.get("timestamp", "an unknown time")
@@ -131,7 +117,6 @@ def check_for_time_question(user_input: str):
                     timestamp_str = timestamp
                 return f"Your loved one {person} died at {timestamp_str} due to {cause}."
 
-        # Check disasters
         if memory["disasters"]:
             latest_disaster = memory["disasters"][-1]
             disaster = latest_disaster.get("type", "the disaster")
@@ -148,9 +133,13 @@ def check_for_time_question(user_input: str):
     return None
 
 def update_memory_with_gpt(user_input: str) -> str:
-    """Send user input and current memory to GPT to update memory and generate a compassionate reply."""
     update_disasters(user_input)
     update_losses_with_time(user_input)
+
+    # Crisis check
+    crisis_keywords = ["kill myself", "suicide", "end my life", "want to die", "hurt myself"]
+    if any(k in user_input.lower() for k in crisis_keywords):
+        return CRISIS_RESPONSE
 
     memory_json = json.dumps(memory, ensure_ascii=False)
     system_prompt = (
@@ -179,21 +168,28 @@ def update_memory_with_gpt(user_input: str) -> str:
         )
 
         gpt_text = response.choices[0].message.content.strip()
-        parsed = json.loads(gpt_text)
+
+        # Parse JSON safely
+        start = gpt_text.find('{')
+        end = gpt_text.rfind('}') + 1
+        if start == -1 or end == -1:
+            print("⚠️ GPT did not return valid JSON:\n", gpt_text)
+            return "I'm here to listen. Can you tell me more about what's going on?"
+
+        parsed = json.loads(gpt_text[start:end])
         updated_memory = parsed.get("memory", memory)
-        reply_text = parsed.get("response", "I'm here to listen. Can you tell me more?")
+        reply_text = parsed.get("response", "I'm here to listen. Can you tell me more?") 
         memory.update(updated_memory)
 
         return reply_text
 
-    except json.JSONDecodeError:
-        return "I'm here to listen. Can you tell me more about what's going on?"
-    except Exception:
+    except Exception as e:
+        print("⚠️ General Error:", e)
         return "I'm here to listen. Can you tell me more about what's going on?"
 
 # --- MAIN LOOP ---
 def main():
-    print("💬 Natural Disastor Companion")
+    print("💬 Natural Disaster Companion")
     print("Type 'quit' to exit.\n")
 
     while True:
@@ -202,17 +198,13 @@ def main():
             print("Bot: Take care of yourself. You’re not alone.")
             break
 
-        # First, check if the user is asking about a remembered time
         time_response = check_for_time_question(user_input)
         if time_response:
             print(f"Bot: {time_response}\n")
             continue
 
-        # Otherwise, use GPT for general emotional conversation
         response = update_memory_with_gpt(user_input)
         print(f"Bot: {response}\n")
 
 if __name__ == "__main__":
     main()
-
-
