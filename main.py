@@ -7,6 +7,8 @@ def main():
     - Non-government users can request aid; if near a station they get distance, otherwise a truck is dispatched.
     """
     import json
+    import sys
+    sys.path.append('src')  # Add src directory to Python path
     from storage import Storage
     from trucks import Truck
     from help_stations import HelpStation
