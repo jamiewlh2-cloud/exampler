@@ -5,11 +5,10 @@ from datetime import datetime, timezone
 from dateutil import parser as date_parser  # pip install python-dateutil
 from openai import OpenAI
 
-# Initialize OpenAI client
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
+# Hardcoded OpenAI API key (replace with your actual key)
+api_key = "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"
 
+# Initialize OpenAI client
 client = OpenAI(api_key=api_key)
 
 # Crisis message
@@ -215,4 +214,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
